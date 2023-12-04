@@ -15,7 +15,7 @@ jobs:
       with:
         repository: viet-evizi/daily-wdio
         token: ${{ secrets.WDIO_ACCESS_TOKEN }}
-        ref: refs/heads/updateINS-27
+        ref: updateINS-27
         fetch-depth: 0
     - name: Use Node.js 18.x
       uses: actions/setup-node@v4
