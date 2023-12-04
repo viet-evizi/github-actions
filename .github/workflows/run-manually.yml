@@ -1,4 +1,4 @@
-name: Tri
+name: Trigger Automation Testing Manually With BRANCH
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ jobs:
       with:
         repository: viet-evizi/daily-wdio
         token: ${{ secrets.WDIO_ACCESS_TOKEN }}
-        ref: ${{ secrets.BRANCH }}
+        ref: updateINS-27
     - name: Use Node.js 18.x
       uses: actions/setup-node@v4
       with:
