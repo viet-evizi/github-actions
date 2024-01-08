@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        repository: viet-evizi/daily-wdio
+        repository: ${{ secrets.WDIO_REPOS }}
         token: ${{ secrets.WDIO_ACCESS_TOKEN }}
         ref: master
     - name: Use Node.js 18.x
