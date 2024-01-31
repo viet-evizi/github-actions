@@ -32,7 +32,7 @@ jobs:
       env:
         CAPABILITIES: chrome
         MAX_INSTANCES: 2
-        R360_DASHBOARD_URL: https://dashboard-s.record360.com
+        R360_DASHBOARD_URL: ${{ secrets.R360_DASHBOARD_URL }}
     - name: WDIO Test Checker
       run: | 
         cat > specs-reporter.log <<EOL
