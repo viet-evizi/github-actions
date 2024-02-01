@@ -23,7 +23,9 @@ jobs:
       with:
         node-version: 18.18.2
         cache: 'npm'
-    - run: yarn install --frozen-lockfile
+    - run: |
+        yarn install --frozen-lockfile
+        yarn add chromedriver
     - name: Run webdriver-io tests
       uses: StarUbiquitous/command-output@v1.0.1
       id: wdio
