@@ -24,10 +24,6 @@ jobs:
         cache: 'npm'
     - run: |
         yarn install --frozen-lockfile
-    - name: Setup Chrome
-      uses: browser-actions/setup-chrome@v1
-      with:
-        chrome-version: 122
     - name: Run webdriver-io tests
       uses: StarUbiquitous/command-output@v1.0.1
       id: wdio
