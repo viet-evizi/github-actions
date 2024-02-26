@@ -12,4 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: browser-actions/setup-chrome@v1
+      with:
+        chrome-version: 122
     - run: chrome --version
