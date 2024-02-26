@@ -25,6 +25,7 @@ jobs:
     - run: |
         yarn install --frozen-lockfile
     - name: Setup Chrome
+      uses: browser-actions/setup-chrome@v1
       with:
         chrome-version: 122
         run: chrome --version
