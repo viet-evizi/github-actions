@@ -1,4 +1,4 @@
-name: Trigger Manually
+name: Test
 
 on:
   workflow_dispatch:
@@ -11,5 +11,5 @@ jobs:
   chrome-ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: browser-actions/setup-chrome@v1
     - run: chrome --version
