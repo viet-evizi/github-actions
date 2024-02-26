@@ -29,7 +29,6 @@ jobs:
       id: wdio
       with:
         run: |
-          chrome --version
           yarn test:local --suite="Smoke Test"
       env:
         CAPABILITIES: chrome
