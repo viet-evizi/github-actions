@@ -1,4 +1,4 @@
-name: Trigger Manually
+name: Run Manually
 
 on:
   workflow_dispatch:
@@ -24,6 +24,10 @@ jobs:
         cache: 'npm'
     - run: |
         yarn install --frozen-lockfile
+    - name: Setup Chrome
+      with:
+        chrome-version: 122
+        run: chrome --version
     - name: Run webdriver-io tests
       uses: StarUbiquitous/command-output@v1.0.1
       id: wdio
