@@ -28,12 +28,13 @@ jobs:
       uses: browser-actions/setup-chrome@v1
       with:
         chrome-version: 122
-        run: chrome --version
     - name: Run webdriver-io tests
       uses: StarUbiquitous/command-output@v1.0.1
       id: wdio
       with:
-        run: yarn test:local --suite="Smoke Test"
+        run: |
+          chrome --version
+          yarn test:local --suite="Smoke Test"
       env:
         CAPABILITIES: chrome
         MAX_INSTANCES: 2
