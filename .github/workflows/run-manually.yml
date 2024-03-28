@@ -24,7 +24,7 @@ jobs:
         cache: 'npm'
     - run: |
         yarn install
-        yarn add chromedriver@122.0.0
+        yarn add chromedriver@123.0.1
     - name: Run webdriver-io tests
       uses: StarUbiquitous/command-output@v1.0.1
       id: wdio
