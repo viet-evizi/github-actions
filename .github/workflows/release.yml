@@ -1,0 +1,17 @@
+name: Push to Production
+on:
+  push:
+    branches:
+      - release-v*
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+      - uses: actions/checkout@v3
+      - name: Deploying now to dashboard-t
+        # Push to dashboard-t and create invalidation. Report to Slack
+        run: |
+          echo "Deploying to dashboard-t"
