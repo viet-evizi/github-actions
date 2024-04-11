@@ -1,8 +1,6 @@
-name: Smoke Test
+name: Smoke Test (pre)
 
 on:
-  schedule:
-    - cron: '0 20 * * *' # 03:00h every night UTC+7
   workflow_dispatch:
 
 concurrency:
