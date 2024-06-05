@@ -1,0 +1,36 @@
+{
+  "Logins": {
+    "enabled": true,
+    "testCases": [
+      {
+        "testCase": "LG-1",
+        "enabled": true
+      },
+      {
+        "testCase": "LG-2",
+        "enabled": false
+      },
+      {
+        "testCase": "LG-3",
+        "enabled": true,
+      }
+    ]
+  },
+  "Units": {
+    "enabled": true,
+    "testCases": [
+      {
+        "testCase": "UNT-1",
+        "enabled": false
+      },
+      {
+        "testCase": "UNT-2",
+        "enabled": true
+      },
+      {
+        "testCase": "UNT-3",
+        "enabled": false,
+      }
+    ],
+  },
+}
