@@ -1,36 +1,48 @@
 {
-  "Logins": {
-    "enabled": true,
-    "testCases": [
-      {
-        "testCase": "LG-1",
-        "enabled": true
-      },
-      {
-        "testCase": "LG-2",
-        "enabled": false
-      },
-      {
-        "testCase": "LG-3",
-        "enabled": true,
-      }
-    ]
+  "env": {
+    "LOG_LEVEL": "ERROR",
+    "R360_DASHBOARD_URL": "https://dashboard-t.record360.com",
+    "R360_API_URL": "https://app-s.record360.com/api",
+    "R360_GRAPHQL_ENDPOINT": "https://api-s.record360.com/v2",
   },
-  "Units": {
-    "enabled": true,
-    "testCases": [
-      {
-        "testCase": "UNT-1",
-        "enabled": false
-      },
-      {
-        "testCase": "UNT-2",
-        "enabled": true
-      },
-      {
-        "testCase": "UNT-3",
-        "enabled": false,
-      }
-    ],
-  },
+  "features": {
+    "Logins": {
+      "enabled": true,
+      "testCases": [
+        {
+          "testCaseId": "LG-1",
+          "enabled": true,
+          "inputs": {
+            "username": "hello@world.com",
+            "password": "Evizi@123",
+          }
+        },
+        {
+          "testCaseId": "LG-2",
+          "enabled": false
+        },
+        {
+          "testCaseId": "LG-3",
+          "enabled": true,
+        }
+      ]
+    },
+    "Units": {
+      "enabled": true,
+      "testCases": [
+        {
+          "testCaseId": "UNT-1",
+          "enabled": false
+        },
+        {
+          "testCaseId": "UNT-2",
+          "enabled": false
+        },
+        {
+          "testCaseId": "UNT-3",
+          "enabled": false,
+        }
+      ],
+    },
+  }
 }
