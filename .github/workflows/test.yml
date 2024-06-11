@@ -2,6 +2,10 @@ name: Test
 
 on:
   workflow_dispatch:
+    inputs:
+      env:
+        description: URL to env.json
+        required: false
 
 concurrency:
   group: ${{ github.workflow }}
@@ -14,4 +18,4 @@ jobs:
     - uses: browser-actions/setup-chrome@v1
       with:
         chrome-version: 122
-    - run: chrome --version
+    - run: echo ${{ inputs.env }}
