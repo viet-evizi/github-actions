@@ -1,48 +1,50 @@
 {
-  "env": {
-    "LOG_LEVEL": "ERROR",
-    "R360_DASHBOARD_URL": "https://dashboard-t.record360.com",
-    "R360_API_URL": "https://app-s.record360.com/api",
-    "R360_GRAPHQL_ENDPOINT": "https://api-s.record360.com/v2",
-  },
-  "features": {
-    "Logins": {
+  "testSuites": [
+    {
+      "name": "Logins",
       "enabled": true,
       "testCases": [
         {
           "testCaseId": "LG-1",
+          "name": "testLoginSuccess",
           "enabled": true,
           "inputs": {
             "username": "hello@world.com",
-            "password": "helloworld",
+            "password": "hello@world"
           }
         },
         {
           "testCaseId": "LG-2",
+          "name": "loginFailedWithInvalidCredentials",
           "enabled": false
         },
         {
           "testCaseId": "LG-3",
-          "enabled": true,
+          "name": "loginWithRememberMe",
+          "enabled": false
         }
       ]
     },
-    "Units": {
-      "enabled": true,
+    {
+      "name": "Units",
+      "enabled": false,
       "testCases": [
         {
           "testCaseId": "UNT-1",
+          "name": "unit1",
           "enabled": false
         },
         {
           "testCaseId": "UNT-2",
-          "enabled": false
+          "name": "unit2",
+          "enabled": true
         },
         {
           "testCaseId": "UNT-3",
-          "enabled": false,
+          "name": "unit3",
+          "enabled": false
         }
-      ],
-    },
-  }
+      ]
+    }
+  ]
 }
