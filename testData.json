@@ -6,19 +6,19 @@
         {
           "status": "invalid",
           "username": "",
-          "password": "wrong-passwd",
+          "password": "hello-world",
           "errorMsg": "Please fill in your email address",
         },
         {
           "status": "invalid",
-          "username": "no-account@gmail.com",
+          "username": "hello@world.com",
           "password": "",
           "errorMsg": "Please fill in your password",
         },
         {
           "status": "invalid",
-          "username": "no-account@gmail.com",
-          "password": "wrong-passwd",
+          "username": "hello@world.com",
+          "password": "hello-world",
           "errorMsg": "Invalid Username/Password",
         }
       ]
