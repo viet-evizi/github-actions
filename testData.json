@@ -4,14 +4,22 @@
       "testCaseId": "LG-1",
       "data": [
         {
-          "username": "aaa",
-          "password": "aaa",
-          "errorMsg": "Invalid Username/Password",
+          "status": "invalid",
+          "username": "",
+          "password": "wrong-passwd",
+          "errorMsg": "Please fill in your email address",
         },
         {
-          "username": "bbb",
-          "password": "bbb",
-          "errorMsg": "ccc",
+          "status": "invalid",
+          "username": "no-account@gmail.com",
+          "password": "",
+          "errorMsg": "Please fill in your password",
+        },
+        {
+          "status": "invalid",
+          "username": "no-account@gmail.com",
+          "password": "wrong-passwd",
+          "errorMsg": "Invalid Username/Password",
         }
       ]
     }
