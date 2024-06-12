@@ -8,10 +8,6 @@
           "testCaseId": "LG-1",
           "name": "testLoginSuccess",
           "enabled": true,
-          "inputs": {
-            "username": "hello@world.com",
-            "password": "hello@world"
-          }
         },
         {
           "testCaseId": "LG-2",
@@ -21,7 +17,7 @@
         {
           "testCaseId": "LG-3",
           "name": "loginWithRememberMe",
-          "enabled": false
+          "enabled": true
         }
       ]
     },
