@@ -1,0 +1,19 @@
+{
+  "testData": [
+    {
+      "testCaseId": "LG-1",
+      "data": [
+        {
+          "username": "aaa",
+          "password": "aaa",
+          "errorMsg": "Invalid Username/Password",
+        },
+        {
+          "username": "bbb",
+          "password": "bbb",
+          "errorMsg": "ccc",
+        }
+      ]
+    }
+  ]
+}
