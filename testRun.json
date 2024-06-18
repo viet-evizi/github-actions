@@ -1,5 +1,5 @@
 {
-  "testSuites": [
+  "testRun": [
     {
       "name": "Logins",
       "enabled": true,
