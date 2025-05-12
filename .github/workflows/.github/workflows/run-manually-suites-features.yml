@@ -1,4 +1,4 @@
-name: Run Manually
+name: Run Manually (Suites vs Features)
 
 on:
   workflow_dispatch:
