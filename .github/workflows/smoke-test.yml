@@ -33,7 +33,7 @@ jobs:
       env:
         CAPABILITIES: chrome
         MAX_INSTANCES: 2
-        R360_DASHBOARD_URL: ${{ secrets.R360_DASHBOARD_URL }}
+        R360_DASHBOARD_URL: ${{ secrets.R360_DASHBOARD_URL_S }}
     - name: WDIO Test Checker
       run: | 
         cat > specs-reporter.log <<EOL
