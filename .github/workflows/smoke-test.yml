@@ -38,6 +38,7 @@ jobs:
         R360_DASHBOARD_URL: ${{ secrets.R360_DASHBOARD_URL_S }}
 
     - name: WDIO Test Checker
+      timeout-minutes: 330 # max 5.5 hours
       run: | 
         cat > specs-reporter.log <<EOL
         ${{ steps.wdio.outputs.stdout }}
@@ -76,6 +77,7 @@ jobs:
         retention-days: 7
     
     - name: Create firebase.json
+      if: always()
       run: |
         echo '{
           "hosting": {
@@ -85,6 +87,7 @@ jobs:
         }' > firebase.json
 
     - name: Create .firebaserc
+      if: always()
       run: |
         echo '{
           "projects": {
@@ -96,6 +99,7 @@ jobs:
     #   run: ls -R
 
     - name: Set up Firebase credentials
+      if: always()
       run: echo '${{ secrets.CHINH_FIREBASE_SERVICE_ACCOUNT }}' > $GITHUB_WORKSPACE/service-account.json
 
     - name: Deploy Allure Report to Firebase Hosting
