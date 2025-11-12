@@ -66,6 +66,7 @@ jobs:
       if: always()
       run: |
         mkdir -p deploy
+        allure generate reports
         cp -r allure-report/* deploy/
       # run: |
       #   DATE=$(date +'%m-%d-%Y')
