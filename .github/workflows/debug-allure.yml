@@ -17,7 +17,7 @@ jobs:
       with:
         repository: ${{ secrets.WDIO_REPOS }}
         token: ${{ secrets.WDIO_ACCESS_TOKEN }}
-        ref: master
+        ref: debug-allure
 
     - name: Setup Java for Allure
       uses: actions/setup-java@v4
