@@ -13,6 +13,18 @@ jobs:
   chrome-ubuntu:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4 # Always recommended to check out your code first
+
+      - name: Set up JDK 17 # A descriptive name for the step
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8' # Specify the desired Java version
+          distribution: 'temurin' # Or another distribution like 'adopt', 'zulu', 'oracle'
+          cache: 'maven' # Or 'gradle', 'sbt' if you are using a build tool
+  
+      # Subsequent steps for building, testing, or deploying your application
+      - name: Build with Maven
+        run: mvn clean install
     - uses: actions/checkout@v3
       with:
         repository: ${{ secrets.WDIO_REPOS }}
