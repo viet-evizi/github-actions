@@ -47,7 +47,7 @@ jobs:
           exit 1
         fi
 
-    - uses: simple-elf/allure-report-action@v1.8
+    - uses: simple-elf/allure-report-action@v1.9
       if: always()
       with:
         allure_results: reports
