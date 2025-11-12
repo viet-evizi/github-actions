@@ -19,10 +19,11 @@ jobs:
         token: ${{ secrets.WDIO_ACCESS_TOKEN }}
         ref: master
 
-    - name: Install OpenJDK
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y openjdk-8-jdk # Or openjdk-8-jdk or openjdk-11-jdk, depending on your needs
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin' # Or 'zulu', 'adopt', etc.
+        java-version: '8' # Or '8', '17', etc.
 
     - name: Use Node.js 20.x
       uses: actions/setup-node@v4
