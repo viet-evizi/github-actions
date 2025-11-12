@@ -19,6 +19,21 @@ jobs:
         token: ${{ secrets.WDIO_ACCESS_TOKEN }}
         ref: master
 
+    - name: Setup Java for Allure
+      uses: actions/setup-java@v4
+      if: always()
+      with:
+        distribution: 'temurin'
+        java-version: '17'  # Use a modern Java version
+    
+    - name: Install Allure CLI
+      if: always()
+      run: |
+        wget https://github.com/allure-framework/allure2/releases/download/2.24.1/allure-2.24.1.tgz
+        tar -zxvf allure-2.24.1.tgz
+        sudo mv allure-2.24.1 /opt/allure
+        sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+
     - name: Use Node.js 20.x
       uses: actions/setup-node@v4
       with:
@@ -46,21 +61,6 @@ jobs:
         if [ !  -z "$(egrep '[0-9]+\sfailed,\s' specs-reporter.log)" ]; then
           exit 1
         fi
-
-    - name: Setup Java for Allure
-      uses: actions/setup-java@v4
-      if: always()
-      with:
-        distribution: 'temurin'
-        java-version: '17'  # Use a modern Java version
-    
-    - name: Install Allure CLI
-      if: always()
-      run: |
-        wget https://github.com/allure-framework/allure2/releases/download/2.24.1/allure-2.24.1.tgz
-        tar -zxvf allure-2.24.1.tgz
-        sudo mv allure-2.24.1 /opt/allure
-        sudo ln -s /opt/allure/bin/allure /usr/bin/allure
 
     - name: Prepare dated report & create deploy folder
       if: always()
