@@ -2,7 +2,7 @@ name: Smoke Test Daily (-s)
 
 on:
   schedule:
-    - cron: '0 20 * * *' # 03:00h every night UTC+7
+    - cron: '0 20 * * 1-5' # 03:00h every night UTC+7
   workflow_dispatch:
 
 concurrency:
