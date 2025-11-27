@@ -1,11 +1,9 @@
-name: Test
+name: Smoke Test Daily (-s)
 
 on:
+  schedule:
+    - cron: '0 20 * * 1-5' # 03:00h every night UTC+7
   workflow_dispatch:
-    inputs:
-      env:
-        description: URL to env.json
-        required: false
 
 concurrency:
   group: ${{ github.workflow }}
@@ -15,7 +13,99 @@ jobs:
   chrome-ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: browser-actions/setup-chrome@v1
+    - uses: actions/checkout@v3
       with:
-        chrome-version: 122
-    - run: echo ${{ inputs.env }}
+        repository: ${{ secrets.WDIO_REPOS }}
+        token: ${{ secrets.WDIO_ACCESS_TOKEN }}
+        ref: old-chromedriver
+
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+
+    - run: yarn install --frozen-lockfile
+
+    - name: Run webdriver-io tests
+      uses: StarUbiquitous/command-output@v1.0.1
+      id: wdio
+      with:
+        run: yarn test:local --suite="Smoke Test"
+      env:
+        CAPABILITIES: chrome
+        MAX_INSTANCES: 2
+        R360_DASHBOARD_URL: ${{ secrets.R360_DASHBOARD_URL_S }}
+
+    - name: WDIO Test Checker
+      timeout-minutes: 330 # max 5.5 hours
+      run: | 
+        cat > specs-reporter.log <<EOL
+        ${{ steps.wdio.outputs.stdout }}
+        EOL
+        if [ !  -z "$(egrep '[0-9]+\sfailed,\s' specs-reporter.log)" ]; then
+          exit 1
+        fi
+
+    - uses: simple-elf/allure-report-action@v1.13
+      if: always()
+      with:
+        allure_results: reports
+        allure_report: allure-report
+        allure_history: allure-history        
+
+    - name: Prepare dated report & create deploy folder
+      if: always()
+      run: |
+        mkdir -p deploy
+        cp -r allure-report/* deploy/
+      # run: |
+      #   DATE=$(date +'%m-%d-%Y')
+      #   echo "✅ Report URL - https://record360-report.web.app/$DATE/"
+      #   mkdir -p deploy/$DATE
+      #   cp -r allure-report/* deploy/$DATE/
+
+    - uses: actions/upload-artifact@v4
+      if: success() || failure()
+      with:
+        name: reports-html
+        path: allure-report/
+        retention-days: 7
+
+    - uses: actions/upload-artifact@v4
+      if: success() || failure()
+      with:
+        name: reports-allure
+        path: reports/
+        retention-days: 7
+    
+    - name: Create firebase.json & .firebaserc
+      if: always()
+      run: |
+        echo '{
+          "hosting": {
+            "public": "deploy",
+            "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+          }
+        }' > firebase.json
+        echo '{
+          "projects": {
+            "default": "record360-report"
+          }
+        }' > .firebaserc
+
+    # - name: Debug files
+    #   run: ls -R
+
+    - name: Set up Firebase credentials
+      if: always()
+      run: echo '${{ secrets.CHINH_FIREBASE_SERVICE_ACCOUNT }}' > $GITHUB_WORKSPACE/service-account.json
+
+    - name: Deploy Allure Report to Firebase Hosting
+      if: always()
+      uses: w9jds/firebase-action@v13.27.0
+      with:
+        args: deploy --only hosting --project record360-report
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
+    
