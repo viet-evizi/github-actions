@@ -25,67 +25,22 @@ jobs:
         node-version: 20.x
         cache: 'npm'
 
+    - run: yarn install --frozen-lockfile
+
     - name: Print Chrome version (before)
       run: |
         echo "=== Chrome - BEFORE install ==="
-        # Try common Chrome binaries; print first that exists
-        if command -v google-chrome >/dev/null 2>&1; then
-          google-chrome --version
-        elif command -v google-chrome-stable >/dev/null 2>&1; then
-          google-chrome-stable --version
-        elif command -v chromium >/dev/null 2>&1; then
-          chromium --version
-        elif command -v chromium-browser >/dev/null 2>&1; then
-          chromium-browser --version
-        else
-          echo "No Chrome/Chromium binary found on PATH"
-        fi
+        google-chrome --version
     
-        # Print chromedriver version if present
-        if command -v chromedriver >/dev/null 2>&1; then
-          echo "chromedriver:"
-          chromedriver --version
-        else
-          echo "chromedriver: not installed"
-        fi
-
     - name: Install specific Chrome version
       run: |
         wget -q https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_130.0.6723.116-1_amd64.deb
         sudo dpkg -i google-chrome-stable_130.0.6723.116-1_amd64.deb
-        google-chrome --version
 
     - name: Print Chrome version (after)
       run: |
         echo "=== Chrome - AFTER install ==="
-        if command -v google-chrome >/dev/null 2>&1; then
-          google-chrome --version
-        elif command -v google-chrome-stable >/dev/null 2>&1; then
-          google-chrome-stable --version
-        elif command -v chromium >/dev/null 2>&1; then
-          chromium --version
-        elif command -v chromium-browser >/dev/null 2>&1; then
-          chromium-browser --version
-        else
-          echo "No Chrome/Chromium binary found on PATH"
-        fi
-    
-        # show binary path and permissions
-        echo "--- Binary locations ---"
-        command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true
-        echo "--- ls -l of binary (if found) ---"
-        BIN=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || echo "")
-        if [ -n "$BIN" ]; then ls -l "$BIN" || true; fi
-    
-        # chromedriver version
-        if command -v chromedriver >/dev/null 2>&1; then
-          echo "chromedriver:"
-          chromedriver --version
-        else
-          echo "chromedriver: not installed"
-        fi
-
-    - run: yarn install --frozen-lockfile
+        google-chrome --version
 
     - name: Run webdriver-io tests
       uses: StarUbiquitous/command-output@v1.0.1
