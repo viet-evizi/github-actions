@@ -17,7 +17,7 @@ jobs:
       with:
         repository: ${{ secrets.WDIO_REPOS }}
         token: ${{ secrets.WDIO_ACCESS_TOKEN }}
-        ref: fe-2698
+        ref: master
 
     - name: Use Node.js 20.x
       uses: actions/setup-node@v4
