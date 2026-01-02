@@ -108,4 +108,17 @@ jobs:
         args: deploy --only hosting --project record360-report
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
+
+    - name: Notify on success
+      if: success()
+      run: |
+        curl -X POST "${{ secrets.GOOGLE_CHAT_WEBHOOK }}" \
+        -H "Content-Type: application/json" \
+        -d '{"text": "✅ Dashboard: https://record360-report.web.app"}'
     
+    - name: Notify on failure
+      if: failure()
+      run: |
+        curl -X POST "${{ secrets.GOOGLE_CHAT_WEBHOOK }}" \
+        -H "Content-Type: application/json" \
+        -d '{"text": "❌ Dashboard: https://record360-report.web.app"}'
