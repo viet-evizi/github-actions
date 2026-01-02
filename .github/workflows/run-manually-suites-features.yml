@@ -28,7 +28,7 @@ jobs:
       uses: StarUbiquitous/command-output@v1.0.1
       id: wdio
       with:
-        run: yarn test:local --suite="Smoke Test"
+        run: yarn test:local --suite="Custom Test Cases" --testCases="LG-1"
       env:
         CAPABILITIES: chrome
         MAX_INSTANCES: 2
