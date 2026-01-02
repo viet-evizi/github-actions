@@ -60,3 +60,15 @@ jobs:
         name: reports-allure
         path: reports/
         retention-days: 7
+    - name: Notify on success
+      if: success()
+      run: |
+        curl -X POST "${{ secrets.GOOGLE_CHAT_WEBHOOK }}" \
+        -H "Content-Type: application/json" \
+        -d '{"text": "✅ Build succeeded for ${{ github.repository }}"}'
+    - name: Notify on failure
+      if: failure()
+      run: |
+        curl -X POST "${{ secrets.GOOGLE_CHAT_WEBHOOK }}" \
+        -H "Content-Type: application/json" \
+        -d '{"text": "❌ Build failed for ${{ github.repository }}"}'
