@@ -13,25 +13,35 @@ jobs:
   chrome-ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout workflow repo
+      uses: actions/checkout@v4
+
+    - name: Checkout WDIO repository
+      uses: actions/checkout@v4
       with:
         repository: ${{ secrets.WDIO_REPOS }}
         token: ${{ secrets.WDIO_ACCESS_TOKEN }}
         ref: master
+        path: wdio
 
     - name: Use Node.js 20.x
       uses: actions/setup-node@v4
       with:
         node-version: 20.x
-        cache: 'npm'
+        cache: 'yarn'
+        cache-dependency-path: wdio/yarn.lock
 
-    - run: yarn install --frozen-lockfile
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+      working-directory: wdio
 
-    - name: Run webdriver-io tests
-      uses: StarUbiquitous/command-output@v1.0.1
+    - name: Run WebDriverIO Tests
       id: wdio
+      uses: StarUbiquitous/command-output@v1.0.1
       with:
-        run: yarn test:local --suite="Smoke Test"
+        run: |
+          cd wdio
+          yarn test:local --suite="Smoke Test"
       env:
         CAPABILITIES: chrome
         MAX_INSTANCES: 2
@@ -47,36 +57,32 @@ jobs:
           exit 1
         fi
 
-    - uses: simple-elf/allure-report-action@v1.13
+    - name: Generate Allure Report
+      uses: simple-elf/allure-report-action@v1.13
       if: always()
       with:
-        allure_results: reports
-        allure_report: allure-report
-        allure_history: allure-history        
+        allure_results: wdio/reports
+        allure_report: wdio/allure-report
+        allure_history: wdio/allure-history       
 
     - name: Prepare dated report & create deploy folder
       if: always()
       run: |
         mkdir -p deploy
-        cp -r allure-report/* deploy/
-      # run: |
-      #   DATE=$(date +'%m-%d-%Y')
-      #   echo "✅ Report URL - https://record360-report.web.app/$DATE/"
-      #   mkdir -p deploy/$DATE
-      #   cp -r allure-report/* deploy/$DATE/
+        cp -r wdio/allure-report/* deploy/
 
     - uses: actions/upload-artifact@v4
       if: success() || failure()
       with:
         name: reports-html
-        path: allure-report/
+        path: wdio/allure-report/
         retention-days: 7
 
     - uses: actions/upload-artifact@v4
       if: success() || failure()
       with:
         name: reports-allure
-        path: reports/
+        path: wdio/reports/
         retention-days: 7
     
     - name: Create firebase.json & .firebaserc
@@ -94,9 +100,6 @@ jobs:
           }
         }' > .firebaserc
 
-    # - name: Debug files
-    #   run: ls -R
-
     - name: Set up Firebase credentials
       if: always()
       run: echo '${{ secrets.CHINH_FIREBASE_SERVICE_ACCOUNT }}' > $GITHUB_WORKSPACE/service-account.json
@@ -109,16 +112,51 @@ jobs:
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
 
-    - name: Notify on success
-      if: success()
+    - name: Parse Allure Summary
+      if: always()
       run: |
-        curl -X POST "${{ secrets.GOOGLE_CHAT_WEBHOOK }}" \
-        -H "Content-Type: application/json" \
-        -d '{"text": "✅ Dashboard: https://record360-report.web.app"}'
-    
-    - name: Notify on failure
-      if: failure()
+        SUMMARY=wdio/allure-report/widgets/summary.json
+
+        TOTAL=$(jq '.statistic.total' $SUMMARY)
+        PASSED=$(jq '.statistic.passed' $SUMMARY)
+        FAILED=$(jq '.statistic.failed' $SUMMARY)
+        SKIPPED=$(jq '.statistic.skipped' $SUMMARY)
+
+        PASS_RATE=$(( PASSED * 100 / TOTAL ))
+
+        DURATION_SEC=$(jq '.time.duration' $SUMMARY)
+        DURATION=$(date -u -d @$((DURATION_SEC/1000)) +%H:%M:%S)
+
+        echo "TOTAL=$TOTAL" >> $GITHUB_ENV
+        echo "PASSED=$PASSED" >> $GITHUB_ENV
+        echo "FAILED=$FAILED" >> $GITHUB_ENV
+        echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
+        echo "PASS_RATE=$PASS_RATE" >> $GITHUB_ENV
+        echo "DURATION=$DURATION" >> $GITHUB_ENV
+
+    - name: Notify Google Chat
+      if: always()
+      env:
+        TZ: Asia/Ho_Chi_Minh
       run: |
+        STATUS="PASSED"
+        STATUS_COLOR="#0F9D58"
+        STATUS_ICON="✅"
+
+        if [ "${{ job.status }}" != "success" ]; then
+          STATUS="FAILED"
+          STATUS_COLOR="#DB4437"
+          STATUS_ICON="❌"
+        fi
+
+        export STATUS STATUS_COLOR STATUS_ICON
+        export BRANCH="${{ github.event.inputs.branch }}"
+        export DATE_TIME="$(date '+%d/%m/%Y %H:%M:%S')"
+        export REPORT_URL="https://record360-report.web.app"
+
+        envsubst < .github/googleChat/dashboard-card.json > payload.json
+
         curl -X POST "${{ secrets.GOOGLE_CHAT_WEBHOOK }}" \
-        -H "Content-Type: application/json" \
-        -d '{"text": "❌ Dashboard: https://record360-report.web.app"}'
+          -H "Content-Type: application/json" \
+          -d @payload.json
+

@@ -1,0 +1,52 @@
+{
+  "cardsV2": [
+    {
+      "cardId": "wdio-report",
+      "card": {
+        "header": {
+          "title": "🔥 R360 Automation Report",
+          "subtitle": "${SUITE} · ${DATE_TIME}"
+        },
+        "sections": [
+          {
+            "widgets": [
+              {
+                "textParagraph": {
+                  "text": "${STATUS_ICON} <b>Status:</b> <font color=\"${STATUS_COLOR}\"><b>${STATUS}</b></font> &nbsp;|&nbsp; <b>Pass rate:</b> <b>${PASS_RATE}%</b>"
+                }
+              }
+            ]
+          },
+          {
+            "header": "📊 Test Summary",
+            "widgets": [
+              {
+                "textParagraph": {
+                  "text": "✅ <b>Passed:</b> ${PASSED}<br>❌ <b>Failed:</b> ${FAILED}<br>⏭️ <b>Skipped:</b> ${SKIPPED}<br>📦 <b>Total:</b> ${TOTAL}<br>⏱️ <b>Duration:</b> ${DURATION}<br>🌿 <b>Branch:</b> <code>${BRANCH}</code>"
+                }
+              }
+            ]
+          },
+          {
+            "widgets": [
+              {
+                "buttonList": {
+                  "buttons": [
+                    {
+                      "text": "📄 VIEW ALLURE REPORT",
+                      "onClick": {
+                        "openLink": {
+                          "url": "${REPORT_URL}"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
