@@ -5,7 +5,7 @@
       "card": {
         "header": {
           "title": "🔥 R360 Automation Report",
-          "subtitle": "${SUITE} · ${DATE_TIME}"
+          "subtitle": "Smoke Test · ${DATE_TIME}"
         },
         "sections": [
           {
