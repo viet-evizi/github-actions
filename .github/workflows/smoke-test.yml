@@ -150,7 +150,6 @@ jobs:
         fi
 
         export STATUS STATUS_COLOR STATUS_ICON
-        export BRANCH="${{ github.event.inputs.branch }}"
         export DATE_TIME="$(date '+%d/%m/%Y %H:%M:%S')"
         export REPORT_URL="https://record360-report.web.app"
 

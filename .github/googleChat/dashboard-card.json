@@ -22,7 +22,7 @@
             "widgets": [
               {
                 "textParagraph": {
-                  "text": "✅ <b>Passed:</b> ${PASSED}<br>❌ <b>Failed:</b> ${FAILED}<br>⏭️ <b>Skipped:</b> ${SKIPPED}<br>📦 <b>Total:</b> ${TOTAL}<br>⏱️ <b>Duration:</b> ${DURATION}<br>🌿 <b>Branch:</b> <code>${BRANCH}</code>"
+                  "text": "✅ <b>Passed:</b> ${PASSED}<br>❌ <b>Failed:</b> ${FAILED}<br>⏭️ <b>Skipped:</b> ${SKIPPED}<br>📦 <b>Total:</b> ${TOTAL}<br>⏱️ <b>Duration:</b> ${DURATION}<br>🌿 <b>Branch:</b> <code>master</code>"
                 }
               }
             ]
