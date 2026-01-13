@@ -67,9 +67,6 @@ jobs:
         MAX_INSTANCES: 2
         R360_DASHBOARD_URL: ${{ secrets.R360_DASHBOARD_URL_S }}
 
-    # =======================
-    # SAVE FULL SPEC LOG
-    # =======================
     - name: Save spec reporter log (stdout + stderr)
       if: always()
       run: |
@@ -81,24 +78,17 @@ jobs:
           echo "${{ steps.wdio.outputs.stderr }}"
         } > specs-reporter.log
 
-        # Fail job nếu có failed spec
         if grep -qE "[0-9]+\s+failed" specs-reporter.log; then
           exit 1
         fi
 
-    # =======================
-    # SHOW LOG (DEBUG)
-    # =======================
-    - name: Show spec reporter log (first 300 lines)
+    - name: Spec reporter log
       if: always()
       run: |
         echo "===== SPEC REPORTER LOG ====="
         sed -n '1,300p' specs-reporter.log
         echo "===== END LOG ====="
 
-    # =======================
-    # UPLOAD LOG
-    # =======================
     - name: Upload spec reporter log
       if: always()
       uses: actions/upload-artifact@v4
@@ -107,9 +97,6 @@ jobs:
         path: specs-reporter.log
         retention-days: 7
 
-    # =======================
-    # ALLURE (HTML ONLY)
-    # =======================
     - name: Generate Allure Report
       if: always()
       uses: simple-elf/allure-report-action@v1.13
@@ -140,9 +127,6 @@ jobs:
         path: wdio/reports/
         retention-days: 7
 
-    # =======================
-    # FIREBASE DEPLOY
-    # =======================
     - name: Create firebase config
       if: always()
       run: |
@@ -171,9 +155,6 @@ jobs:
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
 
-    # =======================
-    # PARSE SPEC SUMMARY
-    # =======================
     - name: Parse Spec Reporter Result
       if: always()
       run: |
@@ -209,9 +190,6 @@ jobs:
         echo "PASS_RATE=$PASS_RATE" >> $GITHUB_ENV
         echo "DURATION=$DURATION" >> $GITHUB_ENV
 
-    # =======================
-    # GOOGLE CHAT
-    # =======================
     - name: Notify Google Chat
       if: always()
       env:
@@ -237,6 +215,6 @@ jobs:
 
         envsubst < .github/googleChat/dashboard-card.json > payload.json
 
-        curl -X POST "${{ secrets.GOOGLE_CHAT_WEBHOOK }}" \
+        curl -X POST "${{ secrets.GCHAT_WEBHOOK }}" \
           -H "Content-Type: application/json" \
           -d @payload.json
