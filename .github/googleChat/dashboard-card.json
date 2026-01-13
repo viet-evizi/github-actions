@@ -4,7 +4,7 @@
       "cardId": "wdio-report",
       "card": {
         "header": {
-          "title": "🔥 R360 Automation Report",
+          "title": "🔥 R360 - Dashboard Automation Report",
           "subtitle": "Smoke Test · ${DATE_TIME}"
         },
         "sections": [
@@ -22,7 +22,7 @@
             "widgets": [
               {
                 "textParagraph": {
-                  "text": "✅ <b>Passed:</b> ${PASSED}<br>❌ <b>Failed:</b> ${FAILED}<br>⏭️ <b>Skipped:</b> ${SKIPPED}<br>📦 <b>Total:</b> ${TOTAL}<br>⏱️ <b>Duration:</b> ${DURATION}<br>🌿 <b>Branch:</b> <code>master</code>"
+                  "text": "✅ <b>Passed:</b> ${PASSED}<br>❌ <b>Failed:</b> ${FAILED}<br>⏭️ <b>Skipped:</b> ${SKIPPED}<br>📦 <b>Total:</b> ${TOTAL}<br>⏱️ <b>Duration:</b> ${DURATION}<br>🌿 <b>Branch:</b> <code>${BRANCH}</code>"
                 }
               }
             ]

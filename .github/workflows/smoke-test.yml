@@ -4,6 +4,23 @@ on:
   schedule:
     - cron: '0 20 * * 1-5' # 03:00h every night UTC+7
   workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Suite name'
+        required: true
+        default: 'Smoke Test'
+      features:
+        description: 'Feature (Optional)'
+        required: false
+        default: ''
+      featureTestCases:
+        description: 'Specific testcase (Optional)'
+        required: false
+        default: ''
+      branch:
+        description: 'Test branch'
+        required: true
+        default: 'master'
 
 concurrency:
   group: ${{ github.workflow }}
@@ -12,6 +29,7 @@ concurrency:
 jobs:
   chrome-ubuntu:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout workflow repo
       uses: actions/checkout@v4
@@ -21,14 +39,14 @@ jobs:
       with:
         repository: ${{ secrets.WDIO_REPOS }}
         token: ${{ secrets.WDIO_ACCESS_TOKEN }}
-        ref: master
+        ref: ${{ github.event.inputs.branch }}
         path: wdio
 
     - name: Use Node.js 20.x
       uses: actions/setup-node@v4
       with:
         node-version: 20.x
-        cache: 'yarn'
+        cache: yarn
         cache-dependency-path: wdio/yarn.lock
 
     - name: Install dependencies
@@ -37,55 +55,64 @@ jobs:
 
     - name: Run WebDriverIO Tests
       id: wdio
-      uses: StarUbiquitous/command-output@v1.0.1
-      with:
-        run: |
-          cd wdio
-          yarn test:local --suite="Smoke Test"
+      run: |
+        cd wdio
+        yarn test:local \
+          --suite="${{ github.event.inputs.suite }}" \
+          --features="${{ github.event.inputs.features }}" \
+          --featureTestCases="${{ github.event.inputs.featureTestCases }}" \
+          2>&1 | tee ../specs-reporter.log
       env:
         CAPABILITIES: chrome
         MAX_INSTANCES: 2
         R360_DASHBOARD_URL: ${{ secrets.R360_DASHBOARD_URL_S }}
 
     - name: WDIO Test Checker
-      timeout-minutes: 330 # max 5.5 hours
-      run: | 
-        cat > specs-reporter.log <<EOL
-        ${{ steps.wdio.outputs.stdout }}
-        EOL
-        if [ !  -z "$(egrep '[0-9]+\sfailed,\s' specs-reporter.log)" ]; then
+      if: always()
+      run: |
+        if grep -qE "[0-9]+\s+failed" specs-reporter.log; then
           exit 1
         fi
 
-    - name: Generate Allure Report
-      uses: simple-elf/allure-report-action@v1.13
+    - name: Upload spec reporter log
       if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: specs-reporter-log
+        path: specs-reporter.log
+        retention-days: 7
+
+    - name: Generate Allure Report
+      if: always()
+      uses: simple-elf/allure-report-action@v1.13
       with:
         allure_results: wdio/reports
         allure_report: wdio/allure-report
-        allure_history: wdio/allure-history       
+        allure_history: wdio/allure-history
 
-    - name: Prepare dated report & create deploy folder
+    - name: Prepare deploy folder
       if: always()
       run: |
         mkdir -p deploy
         cp -r wdio/allure-report/* deploy/
 
-    - uses: actions/upload-artifact@v4
+    - name: Upload Allure HTML
       if: success() || failure()
+      uses: actions/upload-artifact@v4
       with:
         name: reports-html
         path: wdio/allure-report/
         retention-days: 7
 
-    - uses: actions/upload-artifact@v4
+    - name: Upload Allure raw results
       if: success() || failure()
+      uses: actions/upload-artifact@v4
       with:
         name: reports-allure
         path: wdio/reports/
         retention-days: 7
-    
-    - name: Create firebase.json & .firebaserc
+
+    - name: Create firebase config
       if: always()
       run: |
         echo '{
@@ -94,6 +121,7 @@ jobs:
             "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
           }
         }' > firebase.json
+
         echo '{
           "projects": {
             "default": "record360-report"
@@ -112,25 +140,38 @@ jobs:
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
 
-    - name: Parse Allure Summary
+    - name: Parse Spec Reporter Result
       if: always()
       run: |
-        SUMMARY=wdio/allure-report/widgets/summary.json
+        LOG=specs-reporter.log
 
-        TOTAL=$(jq '.statistic.total' $SUMMARY)
-        PASSED=$(jq '.statistic.passed' $SUMMARY)
-        FAILED=$(jq '.statistic.failed' $SUMMARY)
-        SKIPPED=$(jq '.statistic.skipped' $SUMMARY)
+        if ! grep -q "Spec Files:" "$LOG"; then
+          echo "Spec summary not found!"
+          echo "TOTAL=0" >> $GITHUB_ENV
+          echo "PASSED=0" >> $GITHUB_ENV
+          echo "FAILED=0" >> $GITHUB_ENV
+          echo "SKIPPED=0" >> $GITHUB_ENV
+          echo "RETRIES=0" >> $GITHUB_ENV
+          echo "DURATION=00:00:00" >> $GITHUB_ENV
+          exit 0
+        fi
 
-        PASS_RATE=$(( PASSED * 100 / TOTAL ))
+        LINE=$(grep "Spec Files:" "$LOG" | tail -1)
 
-        DURATION_SEC=$(jq '.time.duration' $SUMMARY)
-        DURATION=$(date -u -d @$((DURATION_SEC/1000)) +%H:%M:%S)
+        PASSED=$(echo "$LINE" | grep -oP '\d+(?=\s+passed)' || echo 0)
+        RETRIES=$(echo "$LINE" | grep -oP '\d+(?=\s+retries)' || echo 0)
+        FAILED=$(echo "$LINE" | grep -oP '\d+(?=\s+failed)' || echo 0)
+        SKIPPED=$(echo "$LINE" | grep -oP '\d+(?=\s+skipped)' || echo 0)
+        TOTAL=$(echo "$LINE" | grep -oP '\d+(?=\s+total)' || echo 0)
+        DURATION=$(echo "$LINE" | grep -oP '\d{2}:\d{2}:\d{2}' || echo "00:00:00")
+
+        PASS_RATE=$(( PASSED * 100 / (TOTAL - SKIPPED)))
 
         echo "TOTAL=$TOTAL" >> $GITHUB_ENV
         echo "PASSED=$PASSED" >> $GITHUB_ENV
         echo "FAILED=$FAILED" >> $GITHUB_ENV
         echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
+        echo "RETRIES=$RETRIES" >> $GITHUB_ENV
         echo "PASS_RATE=$PASS_RATE" >> $GITHUB_ENV
         echo "DURATION=$DURATION" >> $GITHUB_ENV
 
@@ -143,7 +184,11 @@ jobs:
         STATUS_COLOR="#0F9D58"
         STATUS_ICON="✅"
 
-        if [ "${{ job.status }}" != "success" ]; then
+        if [ "${{ job.status }}" = "cancelled" ]; then
+          STATUS="CANCELLED"
+          STATUS_COLOR="#F4B400"
+          STATUS_ICON="🟡"
+        elif [ "${{ job.status }}" != "success" ]; then
           STATUS="FAILED"
           STATUS_COLOR="#DB4437"
           STATUS_ICON="❌"
@@ -158,4 +203,3 @@ jobs:
         curl -X POST "${{ secrets.GOOGLE_CHAT_WEBHOOK }}" \
           -H "Content-Type: application/json" \
           -d @payload.json
-
