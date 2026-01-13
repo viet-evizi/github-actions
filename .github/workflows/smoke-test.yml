@@ -29,10 +29,17 @@ concurrency:
 jobs:
   chrome-ubuntu:
     runs-on: ubuntu-latest
+
     steps:
+    # --------------------------------------------------
+    # Checkout workflow repo
+    # --------------------------------------------------
     - name: Checkout workflow repo
       uses: actions/checkout@v4
 
+    # --------------------------------------------------
+    # Checkout WDIO repo
+    # --------------------------------------------------
     - name: Checkout WDIO repository
       uses: actions/checkout@v4
       with:
@@ -41,54 +48,53 @@ jobs:
         ref: ${{ github.event.inputs.branch }}
         path: wdio
 
+    # --------------------------------------------------
+    # Setup Node
+    # --------------------------------------------------
     - name: Use Node.js 20.x
       uses: actions/setup-node@v4
       with:
         node-version: 20.x
-        cache: 'yarn'
+        cache: yarn
         cache-dependency-path: wdio/yarn.lock
 
+    # --------------------------------------------------
+    # Install deps
+    # --------------------------------------------------
     - name: Install dependencies
       run: yarn install --frozen-lockfile
       working-directory: wdio
 
+    # --------------------------------------------------
+    # RUN WDIO (TEE LOG – QUAN TRỌNG NHẤT)
+    # --------------------------------------------------
     - name: Run WebDriverIO Tests
       id: wdio
-      uses: StarUbiquitous/command-output@v1.0.1
-      with:
-        run: |
-          cd wdio
-          yarn test:local \
-            --suite="${{ github.event.inputs.suite }}" \
-            --features="${{ github.event.inputs.features }}" \
-            --featureTestCases="${{ github.event.inputs.featureTestCases }}"
+      run: |
+        cd wdio
+        yarn test:local \
+          --suite="${{ github.event.inputs.suite }}" \
+          --features="${{ github.event.inputs.features }}" \
+          --featureTestCases="${{ github.event.inputs.featureTestCases }}" \
+          2>&1 | tee ../specs-reporter.log
       env:
         CAPABILITIES: chrome
         MAX_INSTANCES: 2
         R360_DASHBOARD_URL: ${{ secrets.R360_DASHBOARD_URL_S }}
 
-    - name: Save spec reporter log (stdout + stderr)
+    # --------------------------------------------------
+    # Fail job if spec has failed tests
+    # --------------------------------------------------
+    - name: WDIO Test Checker
       if: always()
       run: |
-        {
-          echo "===== STDOUT ====="
-          echo "${{ steps.wdio.outputs.stdout }}"
-          echo
-          echo "===== STDERR ====="
-          echo "${{ steps.wdio.outputs.stderr }}"
-        } > specs-reporter.log
-
         if grep -qE "[0-9]+\s+failed" specs-reporter.log; then
           exit 1
         fi
 
-    - name: Spec reporter log
-      if: always()
-      run: |
-        echo "===== SPEC REPORTER LOG ====="
-        sed -n '1,300p' specs-reporter.log
-        echo "===== END LOG ====="
-
+    # --------------------------------------------------
+    # Upload spec reporter log
+    # --------------------------------------------------
     - name: Upload spec reporter log
       if: always()
       uses: actions/upload-artifact@v4
@@ -97,6 +103,9 @@ jobs:
         path: specs-reporter.log
         retention-days: 7
 
+    # --------------------------------------------------
+    # Generate Allure Report
+    # --------------------------------------------------
     - name: Generate Allure Report
       if: always()
       uses: simple-elf/allure-report-action@v1.13
@@ -105,12 +114,18 @@ jobs:
         allure_report: wdio/allure-report
         allure_history: wdio/allure-history
 
+    # --------------------------------------------------
+    # Prepare deploy folder
+    # --------------------------------------------------
     - name: Prepare deploy folder
       if: always()
       run: |
         mkdir -p deploy
         cp -r wdio/allure-report/* deploy/
 
+    # --------------------------------------------------
+    # Upload Allure artifacts
+    # --------------------------------------------------
     - name: Upload Allure HTML
       if: success() || failure()
       uses: actions/upload-artifact@v4
@@ -127,6 +142,9 @@ jobs:
         path: wdio/reports/
         retention-days: 7
 
+    # --------------------------------------------------
+    # Firebase config
+    # --------------------------------------------------
     - name: Create firebase config
       if: always()
       run: |
@@ -155,6 +173,9 @@ jobs:
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
 
+    # --------------------------------------------------
+    # Parse Spec Reporter Result (PASSED / FAILED / RETRIES)
+    # --------------------------------------------------
     - name: Parse Spec Reporter Result
       if: always()
       run: |
@@ -190,6 +211,9 @@ jobs:
         echo "PASS_RATE=$PASS_RATE" >> $GITHUB_ENV
         echo "DURATION=$DURATION" >> $GITHUB_ENV
 
+    # --------------------------------------------------
+    # Notify Google Chat
+    # --------------------------------------------------
     - name: Notify Google Chat
       if: always()
       env:
