@@ -2,25 +2,8 @@ name: Smoke Test Daily (-s)
 
 on:
   schedule:
-    - cron: '0 20 * * 1-5' # 03:00h every night UTC+7
+    - cron: '47 1 * * 1-5' # 03:00h every night UTC+7
   workflow_dispatch:
-    inputs:
-      suite:
-        description: 'Suite name'
-        required: true
-        default: 'Smoke Test'
-      features:
-        description: 'Feature (Optional)'
-        required: false
-        default: ''
-      featureTestCases:
-        description: 'Specific testcase (Optional)'
-        required: false
-        default: ''
-      branch:
-        description: 'Test branch'
-        required: true
-        default: 'master'
 
 concurrency:
   group: ${{ github.workflow }}
@@ -39,7 +22,7 @@ jobs:
       with:
         repository: ${{ secrets.WDIO_REPOS }}
         token: ${{ secrets.WDIO_ACCESS_TOKEN }}
-        ref: ${{ github.event.inputs.branch }}
+        ref: master
         path: wdio
 
     - name: Use Node.js 20.x
@@ -57,10 +40,7 @@ jobs:
       id: wdio
       run: |
         cd wdio
-        yarn test:local \
-          --suite="${{ github.event.inputs.suite }}" \
-          --features="${{ github.event.inputs.features }}" \
-          --featureTestCases="${{ github.event.inputs.featureTestCases }}" \
+        yarn test:local --suite="Smoke Test" \
           2>&1 | tee ../specs-reporter.log
       env:
         CAPABILITIES: chrome
