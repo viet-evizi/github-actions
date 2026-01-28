@@ -60,9 +60,16 @@ jobs:
     - name: WDIO Test Checker
       if: always()
       run: |
-        if grep -qE "[0-9]+\s+failed" specs-reporter.log; then
-          exit 1
-        fi
+        LOG="specs-reporter.log"
+
+        [ ! -f "$LOG" ] && exit 0
+
+        LINE=$(grep "Spec Files:" "$LOG" | tail -1 || true)
+        [ -z "$LINE" ] && exit 0
+
+        FAILED=$(echo "$LINE" | grep -oP '\d+(?=\s+failed)' || echo 0)
+
+        [ "$FAILED" -gt 0 ] && exit 1
 
     - name: Upload spec reporter log
       if: always()
