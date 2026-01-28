@@ -67,7 +67,8 @@ jobs:
         LINE=$(grep "Spec Files:" "$LOG" | tail -1 || true)
         [ -z "$LINE" ] && exit 0
 
-        FAILED=$(echo "$LINE" | grep -oP '\d+(?=\s+failed)' || echo 0)
+        FAILED=$(echo "$LINE" | grep -oP '\d+(?=\s+failed)' || true)
+        FAILED=${FAILED:-0}
 
         [ "$FAILED" -gt 0 ] && exit 1
 
