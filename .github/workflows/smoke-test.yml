@@ -58,19 +58,13 @@ jobs:
         R360_DASHBOARD_URL: ${{ secrets.R360_DASHBOARD_URL_S }}
 
     - name: WDIO Test Checker
-      if: always()
-      run: |
-        LOG="specs-reporter.log"
-
-        [ ! -f "$LOG" ] && exit 0
-
-        LINE=$(grep "Spec Files:" "$LOG" | tail -1 || true)
-        [ -z "$LINE" ] && exit 0
-
-        FAILED=$(echo "$LINE" | grep -oP '\d+(?=\s+failed)' || true)
-        FAILED=${FAILED:-0}
-
-        [ "$FAILED" -gt 0 ] && exit 1
+      run: | 
+        cat > specs-reporter.log <<EOL
+        ${{ steps.wdio.outputs.stdout }}
+        EOL
+        if [ !  -z "$(egrep '[0-9]+\sfailed,\s' specs-reporter.log)" ]; then
+          exit 1
+        fi
 
     - name: Upload spec reporter log
       if: always()
