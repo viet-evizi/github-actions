@@ -58,14 +58,11 @@ jobs:
         R360_DASHBOARD_URL: ${{ secrets.R360_DASHBOARD_URL_S }}
 
     - name: WDIO Test Checker
-      run: | 
-        cat > specs-reporter.log <<EOL
-        ${{ steps.wdio.outputs.stdout }}
-        EOL
-        if [ !  -z "$(egrep '[0-9]+\sfailed,\s' specs-reporter.log)" ]; then
+      if: always()
+      run: |
+        if grep -qE "[0-9]+\s+failed" specs-reporter.log; then
           exit 1
         fi
-
     - name: Upload spec reporter log
       if: always()
       uses: actions/upload-artifact@v4
@@ -87,7 +84,6 @@ jobs:
       run: |
         mkdir -p deploy
         cp -r wdio/allure-report/* deploy/
-
     - name: Upload Allure HTML
       if: success() || failure()
       uses: actions/upload-artifact@v4
@@ -113,13 +109,11 @@ jobs:
             "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
           }
         }' > firebase.json
-
         echo '{
           "projects": {
             "default": "record360-report"
           }
         }' > .firebaserc
-
     - name: Set up Firebase credentials
       if: always()
       run: echo '${{ secrets.CHINH_FIREBASE_SERVICE_ACCOUNT }}' > $GITHUB_WORKSPACE/service-account.json
@@ -136,7 +130,6 @@ jobs:
       if: always()
       run: |
         LOG=specs-reporter.log
-
         if ! grep -q "Spec Files:" "$LOG"; then
           echo "Spec summary not found!"
           echo "TOTAL=0" >> $GITHUB_ENV
@@ -147,18 +140,14 @@ jobs:
           echo "DURATION=00:00:00" >> $GITHUB_ENV
           exit 0
         fi
-
         LINE=$(grep "Spec Files:" "$LOG" | tail -1)
-
         PASSED=$(echo "$LINE" | grep -oP '\d+(?=\s+passed)' || echo 0)
         RETRIES=$(echo "$LINE" | grep -oP '\d+(?=\s+retries)' || echo 0)
         FAILED=$(echo "$LINE" | grep -oP '\d+(?=\s+failed)' || echo 0)
         SKIPPED=$(echo "$LINE" | grep -oP '\d+(?=\s+skipped)' || echo 0)
         TOTAL=$(echo "$LINE" | grep -oP '\d+(?=\s+total)' || echo 0)
         DURATION=$(echo "$LINE" | grep -oP '\d{2}:\d{2}:\d{2}' || echo "00:00:00")
-
         PASS_RATE=$(( PASSED * 100 / (TOTAL - SKIPPED)))
-
         echo "TOTAL=$TOTAL" >> $GITHUB_ENV
         echo "PASSED=$PASSED" >> $GITHUB_ENV
         echo "FAILED=$FAILED" >> $GITHUB_ENV
@@ -166,7 +155,6 @@ jobs:
         echo "RETRIES=$RETRIES" >> $GITHUB_ENV
         echo "PASS_RATE=$PASS_RATE" >> $GITHUB_ENV
         echo "DURATION=$DURATION" >> $GITHUB_ENV
-
     - name: Notify Google Chat
       if: always()
       env:
@@ -175,7 +163,6 @@ jobs:
         STATUS="PASSED"
         STATUS_COLOR="#0F9D58"
         STATUS_ICON="✅"
-
         if [ "${{ job.status }}" = "cancelled" ]; then
           STATUS="CANCELLED"
           STATUS_COLOR="#F4B400"
@@ -185,13 +172,10 @@ jobs:
           STATUS_COLOR="#DB4437"
           STATUS_ICON="❌"
         fi
-
         export STATUS STATUS_COLOR STATUS_ICON
         export DATE_TIME="$(date '+%d/%m/%Y %H:%M:%S')"
         export REPORT_URL="https://record360-report.web.app"
-
         envsubst < .github/googleChat/dashboard-card.json > payload.json
-
         curl -X POST "${{ secrets.GCHAT_WEBHOOK }}" \
           -H "Content-Type: application/json" \
           -d @payload.json
