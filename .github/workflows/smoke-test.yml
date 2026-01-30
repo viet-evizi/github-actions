@@ -4,6 +4,23 @@ on:
   schedule:
     - cron: '0 20 * * 1-5' # 03:00h every night UTC+7
   workflow_dispatch:
+   inputs:
+      suite:
+        description: 'Suite name'
+        required: true
+        default: 'Smoke Test'
+      features:
+        description: 'Feature (Optional)'
+        required: false
+        default: ''
+      featureTestCases:
+        description: 'Specific testcase (Optional)'
+        required: false
+        default: ''
+      branch:
+        description: 'Test branch'
+        required: true
+        default: 'master'
 
 concurrency:
   group: ${{ github.workflow }}
@@ -50,7 +67,10 @@ jobs:
       id: wdio
       run: |
         cd wdio
-        yarn test:local --suite="Smoke Test" \
+         yarn test:local \
+            --suite="${{ github.event.inputs.suite }}" \
+            --features="${{ github.event.inputs.features }}" \
+            --featureTestCases="${{ github.event.inputs.featureTestCases }}" \
           2>&1 | tee ../specs-reporter.log
       env:
         CAPABILITIES: chrome

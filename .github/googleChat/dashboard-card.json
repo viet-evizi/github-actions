@@ -4,30 +4,12 @@
       "cardId": "wdio-report",
       "card": {
         "header": {
-          "title": "🔥 R360 - Dashboard Automation Report",
+          "title": "${STATUS_ICON} Record360 - Dashboard Automation Report",
           "subtitle": "Smoke Test · ${DATE_TIME}"
         },
         "sections": [
           {
-            "widgets": [
-              {
-                "textParagraph": {
-                  "text": "${STATUS_ICON} <b>Status:</b> <font color=\"${STATUS_COLOR}\"><b>${STATUS}</b></font> &nbsp;|&nbsp; <b>Pass rate:</b> <b>${PASS_RATE}%</b>"
-                }
-              }
-            ]
-          },
-          {
             "header": "📊 Test Summary",
-            "widgets": [
-              {
-                "textParagraph": {
-                  "text": "✅ <b>Passed:</b> ${PASSED}<br>❌ <b>Failed:</b> ${FAILED}<br>⏭️ <b>Skipped:</b> ${SKIPPED}<br>🔁 <b>Retries:</b> ${RETRIES}<br>📦 <b>Total:</b> ${TOTAL}<br>⏱️ <b>Duration:</b> ${DURATION}<br>🌿 <b>Branch:</b> <code>master</code>"
-                }
-              }
-            ]
-          },
-          {
             "widgets": [
               {
                 "buttonList": {
@@ -42,9 +24,14 @@
                     }
                   ]
                 }
+              },
+              {
+                "textParagraph": {
+                  "text": "✅ <b>Passed:</b> ${PASSED} (${PASS_RATE}%)<br>❌ <b>Failed:</b> ${FAILED}<br>⏭️ <b>Skipped:</b> ${SKIPPED}<br>🔁 <b>Retries:</b> ${RETRIES}<br>📦 <b>Total:</b> ${TOTAL}<br>⏱️ <b>Duration:</b> ${DURATION}<br>🌿 <b>Branch:</b> <code>master</code><br><b>Status: ${STATUS}</b>"
+                }
               }
             ]
-          }
+          }      
         ]
       }
     }
