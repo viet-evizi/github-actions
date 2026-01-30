@@ -209,6 +209,6 @@ jobs:
 
         envsubst < .github/googleChat/dashboard-card.json > payload.json
 
-        curl -X POST "${{ secrets.GOOGLE_CHAT_WEBHOOK }}" \
+        curl -X POST "${{ secrets.GCHAT_WEBHOOK }}" \
           -H "Content-Type: application/json" \
           -d @payload.json
