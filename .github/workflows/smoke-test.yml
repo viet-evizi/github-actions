@@ -46,6 +46,9 @@ jobs:
       run: yarn install --frozen-lockfile
       working-directory: wdio
 
+    - name: Clean old reports
+      run: rm -rf wdio/reports wdio/allure-report wdio/allure-history specs-reporter.log
+
     - name: Run WebDriverIO Tests
       id: wdio
       run: |
@@ -71,13 +74,41 @@ jobs:
         path: specs-reporter.log
         retention-days: 7
 
+    - name: Get Allure history
+      if: always()
+      uses: actions/checkout@v4
+      continue-on-error: true
+      with:
+        repository: ${{ secrets.WDIO_REPOS }}
+        token: ${{ secrets.WDIO_ACCESS_TOKEN }}
+        ref: allure-history
+        path: report-history
+
+    - name: Copy previous Allure history to reports (for trend graphs)
+      if: always()
+      run: |
+        mkdir -p wdio/reports/history
+        cp -r report-history/allure-history/last-history/. wdio/reports/history 2>/dev/null || \
+        cp -r report-history/last-history/. wdio/reports/history 2>/dev/null || true
+
     - name: Generate Allure Report
       if: always()
-      uses: simple-elf/allure-report-action@v1.13
+      run: npx --yes allure-commandline@2.37.0 generate wdio/reports --clean -o wdio/allure-report
+
+    - name: Save history for next run
+      if: always()
+      run: |
+        mkdir -p allure-history-branch/allure-history
+        cp -r wdio/allure-report/history allure-history-branch/allure-history/last-history
+
+    - name: Push report history to branch
+      if: always()
+      uses: peaceiris/actions-gh-pages@v4
       with:
-        allure_results: wdio/reports
-        allure_report: wdio/allure-report
-        allure_history: wdio/allure-history
+        personal_token: ${{ secrets.WDIO_ACCESS_TOKEN }}
+        external_repository: ${{ secrets.WDIO_REPOS }}
+        publish_branch: allure-history
+        publish_dir: allure-history-branch
 
     - name: Prepare deploy folder
       if: always()
